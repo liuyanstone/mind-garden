@@ -1,5 +1,5 @@
-import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=11';
-import {ART,HERO} from './art.mjs?v=5';
+import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=12';
+import {ART,HERO} from './art.mjs?v=6';
 import {zh,en} from './i18n.mjs?v=5';
 const $=s=>document.querySelector(s);
 const read=k=>{try{return localStorage.getItem(k)}catch{return null}};

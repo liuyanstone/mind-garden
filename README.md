@@ -15,3 +15,5 @@ Original SVG illustrations are in art.mjs. Game content remains in its respectiv
 Fruit Garden (`fruit-garden`) adds bilingual random match-3 challenges: three difficulties, six goal types, specials and boosters. The hub now contains nine games.
 
 Coastal Treasures (`coastal-treasures`) is the tenth game: two randomized daily beaches, independent non-repeat memory runs, 64 designs per beach and locally saved daily progress.
+
+The `coastal-treasures` URL now hosts Little Treasures / 拾光小天地: Spring Garden replaces Twilight Shore, with 64 garden-only flower, plant and toy designs, fully separate from Sunlit Cove. Existing links and language keys remain valid.
