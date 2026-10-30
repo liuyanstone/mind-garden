@@ -1,6 +1,6 @@
-import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=2';
-import {ART,HERO} from './art.mjs';
-import {zh,en} from './i18n.mjs';
+import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=3';
+import {ART,HERO} from './art.mjs?v=3';
+import {zh,en} from './i18n.mjs?v=3';
 const $=s=>document.querySelector(s);
 const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
 const write=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
@@ -12,7 +12,7 @@ $('#hero-art').innerHTML=HERO;
 function cards(){
  const games=filteredGames(category);
  $('#game-count').textContent=t().count.replace('{count}',games.length);
- $('#game-grid').innerHTML=games.map(g=>`<article class="card ${category==='all'&&g.id==='object-garden'?'wide':''}"><a class="card-art" href="#play/${g.id}" aria-label="${t().play} · ${g.name[lang]}">${ART[g.id]}</a><div class="card-body"><div class="card-topline"><span class="tag">${g.tag[lang]}</span><span class="card-index">${String(GAMES.indexOf(g)+1).padStart(2,'0')}</span></div><h3><a href="#play/${g.id}">${g.name[lang]}</a></h3><p>${g.description[lang]}</p><small>${g.detail[lang]}</small><a class="play-link" href="#play/${g.id}"><span>${t().play}</span><span aria-hidden="true">↗</span></a></div></article>`).join('');
+ $('#game-grid').innerHTML=games.map(g=>`<article class="card "><a class="card-art" href="#play/${g.id}" aria-label="${t().play} · ${g.name[lang]}">${ART[g.id]}</a><div class="card-body"><div class="card-topline"><span class="tag">${g.tag[lang]}</span><span class="card-index">${String(GAMES.indexOf(g)+1).padStart(2,'0')}</span></div><h3><a href="#play/${g.id}">${g.name[lang]}</a></h3><p>${g.description[lang]}</p><small>${g.detail[lang]}</small><a class="play-link" href="#play/${g.id}"><span>${t().play}</span><span aria-hidden="true">↗</span></a></div></article>`).join('');
  const last=BY_ID[read('mind-garden-last')];
  $('#last-played').hidden=!last;
  if(last)$('#last-played').innerHTML=`<span>${t().last}</span><strong>${last.name[lang]}</strong><a href="#play/${last.id}">${t().openLast} ↗</a>`;
