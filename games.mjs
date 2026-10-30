@@ -6,10 +6,10 @@ export const GAMES=[
 {id:'koi-pond',category:'memory',languageKey:'koi-pond-language',name:{zh:'锦鲤小池',en:'Koi Pond'},description:{zh:'跟随金红锦鲤，记住谁已经吃过。每一轮，每条鱼只喂一次。',en:'Follow the golden-red koi and remember who has eaten. Feed each fish just once per round.'},detail:{zh:'6、8、10 条鱼 · 每池 3 轮',en:'6, 8 or 10 koi · 3 rounds per pond'},tag:{zh:'记忆与追踪',en:'Memory & tracking'}},
 {id:'coastal-dash',category:'orientation',languageKey:'coastal-dash-language',name:{zh:'海岸疾驰',en:'Coastal Dash'},description:{zh:'看清预警，左右换道。沿着海岸向前，找到一路畅通的车道。',en:'Read the warnings, steer left and right, and find your open lane along the coast.'},detail:{zh:'每局 90 秒 · 大按钮操控',en:'90-second drives · Large touch controls'},tag:{zh:'反应与专注',en:'Reactions & attention'}},
 {id:'object-garden',category:'thinking',languageKey:'object-garden-language',name:{zh:'寻物小花园',en:'Object Garden'},description:{zh:'在散落的物品中，找到文字提示的那个。看看你能发现多少小惊喜。',en:'Find the named object among a scattered collection. How many discoveries can you make?'},detail:{zh:'1000 种物品 · 每局随机 150 种',en:'1,000 objects · 150 randomly chosen per round'},tag:{zh:'观察与搜索',en:'Observation & search'}},
-{id:'bunny-sokoban',category:'thinking',languageKey:'bunny-sokoban-language',name:{zh:'萌兔推箱子',en:'Bunny Box Garden'},description:{zh:'只能推，不能拉。帮小兔把每个箱子送到花朵上，动动脑筋，慢慢找到好办法。',en:'Push, never pull. Help the bunny bring every crate onto a flower, one thoughtful step at a time.'},detail:{zh:'3 个难度 · 每级 200 关 · 完整演示',en:'3 difficulties · 200 levels each · Full solutions'},tag:{zh:'逻辑与规划',en:'Logic & planning'}}
+{id:'bunny-sokoban',revision:2,category:'thinking',languageKey:'bunny-sokoban-language',name:{zh:'萌兔推箱子',en:'Bunny Box Garden'},description:{zh:'只能推，不能拉。帮小兔把每个箱子送到花朵上，动动脑筋，慢慢找到好办法。',en:'Push, never pull. Help the bunny bring every crate onto a flower, one thoughtful step at a time.'},detail:{zh:'5 个难度 · 每级 200 关 · 完整演示',en:'5 difficulties · 200 levels each · Full solutions'},tag:{zh:'逻辑与规划',en:'Logic & planning'}}
 ];
 export const BY_ID=Object.fromEntries(GAMES.map(g=>[g.id,g]));
 export const ORIGIN='https://liuyanstone.github.io';
-export function gameURL(id){if(!BY_ID[id])throw Error('Unknown game');return `${ORIGIN}/${id}/`;}
+export function gameURL(id){if(!BY_ID[id])throw Error('Unknown game');return `${ORIGIN}/${id}/${BY_ID[id].revision?`?v=${BY_ID[id].revision}`:""}`;}
 export function route(hash){const match=/^#play\/([a-z-]+)$/.exec(hash);return match&&BY_ID[match[1]]?match[1]:null;}
 export function filteredGames(category){return category==='all'?GAMES:GAMES.filter(g=>g.category===category);}
