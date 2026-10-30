@@ -1,6 +1,6 @@
-import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=6';
-import {ART,HERO} from './art.mjs?v=3';
-import {zh,en} from './i18n.mjs?v=3';
+import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=7';
+import {ART,HERO} from './art.mjs?v=4';
+import {zh,en} from './i18n.mjs?v=4';
 const $=s=>document.querySelector(s);
 const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
 const write=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};

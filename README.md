@@ -11,3 +11,5 @@ Existing game URLs and localStorage keys are preserved. Scores remain local to t
 Serve this directory with any static HTTP server. Run `node check.mjs` to check collection configuration, bilingual completeness and safe route behavior. No build step, account, installation or external library is needed.
 
 Original SVG illustrations are in art.mjs. Game content remains in its respective repository. All game links are restricted to the eight known liuyanstone.github.io roots.
+
+Fruit Garden (`fruit-garden`) adds bilingual random match-3 challenges: three difficulties, six goal types, specials and boosters. The hub now contains nine games.
