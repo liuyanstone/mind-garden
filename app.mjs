@@ -1,4 +1,4 @@
-import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=8';
+import {GAMES,BY_ID,gameURL,route,filteredGames} from './games.mjs?v=9';
 import {ART,HERO} from './art.mjs?v=4';
 import {zh,en} from './i18n.mjs?v=4';
 const $=s=>document.querySelector(s);
