@@ -13,3 +13,5 @@ Serve this directory with any static HTTP server. Run `node check.mjs` to check 
 Original SVG illustrations are in art.mjs. Game content remains in its respective repository. All game links are restricted to the eight known liuyanstone.github.io roots.
 
 Fruit Garden (`fruit-garden`) adds bilingual random match-3 challenges: three difficulties, six goal types, specials and boosters. The hub now contains nine games.
+
+Coastal Treasures (`coastal-treasures`) is the tenth game: two randomized daily beaches, independent non-repeat memory runs, 64 designs per beach and locally saved daily progress.
