@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f4e9">
+<meta name="description" content="空当接龙 FreeCell：经典纸牌，几乎每一局都能解开。中英文、大字号、可撤销、可提示。">
+<title>空当接龙 · FreeCell</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=1">
+<script type="module" src="app.mjs?v=1"></script>
+</head>
+<body>
+<header class="top">
+  <div class="title">
+    <img src="icon.svg" width="40" height="40" alt="">
+    <div><h1 data-t="name">空当接龙</h1><span class="deal" id="deal-label"></span></div>
+  </div>
+  <div class="status" aria-live="polite">
+    <span><small data-t="time">时间</small><b id="time">0:00</b></span>
+    <span><small data-t="moves">步数</small><b id="moves">0</b></span>
+  </div>
+  <label class="language"><span class="sr" data-t="language">语言</span>
+    <select id="language" aria-label="语言 / Language"><option value="zh">中文</option><option value="en">English</option></select>
+  </label>
+</header>
+
+<nav class="toolbar" aria-label="操作 / Actions">
+  <button type="button" id="btn-new" class="primary" data-t="newGame">新的一局</button>
+  <button type="button" id="btn-undo" data-t="undo">撤销</button>
+  <button type="button" id="btn-hint" data-t="hint">提示</button>
+  <button type="button" id="btn-restart" data-t="restart">重新开始</button>
+  <button type="button" id="btn-help" data-t="help">玩法与记录</button>
+</nav>
+
+<main>
+  <div id="board" class="board" aria-label="牌桌 / Table"></div>
+  <p id="message" class="message" role="status" hidden></p>
+</main>
+
+<dialog id="help" class="dialog">
+  <form method="dialog">
+    <h2 data-t="howTitle">怎么玩</h2>
+    <ul class="rules">
+      <li data-t="rule1"></li>
+      <li data-t="rule2"></li>
+      <li data-t="rule3"></li>
+      <li data-t="rule4"></li>
+      <li data-t="rule5"></li>
+    </ul>
+    <h3 data-t="statsTitle">我的记录</h3>
+    <dl class="stats" id="stats"></dl>
+    <h3 data-t="pickDeal">选择牌局编号</h3>
+    <div class="pick-deal">
+      <input id="deal-input" type="number" inputmode="numeric" min="1" max="1000000" aria-label="牌局编号 / Game number">
+      <button type="button" id="btn-play-deal" data-t="playDeal">开始这一局</button>
+    </div>
+    <div class="dialog-actions"><button class="primary" value="close" data-t="close">知道了</button></div>
+  </form>
+</dialog>
+
+<dialog id="win" class="dialog win">
+  <form method="dialog">
+    <div class="win-mark" aria-hidden="true">✿</div>
+    <h2 data-t="winTitle">完成了！</h2>
+    <p id="win-text"></p>
+    <div class="dialog-actions">
+      <button value="close" data-t="lookAgain">看看牌桌</button>
+      <button class="primary" value="new" data-t="newGame">新的一局</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirm" class="dialog small">
+  <form method="dialog">
+    <p id="confirm-text"></p>
+    <div class="dialog-actions">
+      <button value="cancel" data-t="cancel">取消</button>
+      <button class="primary" value="ok" id="confirm-ok"></button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>

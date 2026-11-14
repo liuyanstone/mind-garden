@@ -1,0 +1,100 @@
+:root{
+  color-scheme:light;
+  --ink:#263e35;--muted:#66736a;--paper:#f7f4e9;--line:#dcded0;--green:#345c43;--orange:#b94e2c;
+  --felt:#e3e9d6;--felt-line:#cfd8c0;--card:#fffdf7;--card-line:#cdd1c0;--red:#b94e2c;--black:#263e35;
+  --select:#e2a64b;--target:#7fa37a;
+  font-family:ui-rounded,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;font-size:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);line-height:1.5}
+button,select,input{font:inherit;color:inherit}
+button,select{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px max(16px,3vw) 8px;max-width:1180px;margin:0 auto}
+.title{display:flex;align-items:center;gap:12px;min-width:0}
+.title h1{font-size:24px;margin:0;line-height:1.2;letter-spacing:.03em}
+.deal{font-size:14px;color:var(--muted)}
+.status{display:flex;gap:22px;margin-left:auto}
+.status span{display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.status small{font-size:13px;color:var(--muted)}
+.status b{font-size:22px;font-variant-numeric:tabular-nums}
+.language select{border:1px solid #ccd2c3;border-radius:100px;background:transparent;padding:6px 12px;font-size:16px;min-height:40px}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:6px max(16px,3vw) 12px;max-width:1180px;margin:0 auto}
+.toolbar button,.dialog button{border:1px solid #ccd2c3;background:#fffdf7;border-radius:10px;padding:8px 16px;min-height:46px;font-size:17px;font-weight:650}
+.toolbar button:hover,.dialog button:hover{border-color:var(--green)}
+.toolbar button:disabled{opacity:.45;cursor:default;border-color:#ccd2c3}
+button.primary{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 0 #203d2c}
+button.primary:hover{background:#254b34}
+
+main{max-width:1180px;margin:0 auto;padding:0 max(16px,3vw) 28px}
+.board{position:relative;background:var(--felt);border:1px solid var(--felt-line);border-radius:22px;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
+.message{text-align:center;color:var(--muted);margin:14px 0 0;font-size:17px}
+
+/* Slots */
+.slot{position:absolute;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.1);border:2px dashed #b9c4ab;display:grid;place-items:center;color:#a2b093;font-size:calc(var(--cw)*.42);transition:background .15s,border-color .15s}
+.slot.found{border-style:solid;background:#edf1e3}
+.slot.found.red{color:#d6a593}
+.slot.cell{background:rgba(255,255,255,.25)}
+.slot.col{border-color:transparent;background:rgba(255,255,255,.18)}
+.slot.target{border-color:var(--target);border-style:solid;background:rgba(127,163,122,.18)}
+.slot-label{position:absolute;top:-1.55em;left:0;font-size:12px;color:var(--muted);letter-spacing:.06em;white-space:nowrap}
+
+/* Cards */
+.card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.1);background:var(--card);border:1px solid var(--card-line);
+  box-shadow:0 1px 2px rgba(38,62,53,.12);transition:transform .2s ease,box-shadow .15s;color:var(--black);cursor:pointer;will-change:transform}
+.card.red{color:var(--red)}
+.card .corner{position:absolute;left:8%;top:4%;display:flex;align-items:baseline;gap:2px;line-height:1;font-weight:750}
+.card .r{font-size:calc(var(--cw)*.34);letter-spacing:-.05em}
+.card .s{font-size:calc(var(--cw)*.28)}
+.card .pip{position:absolute;left:0;right:0;bottom:10%;text-align:center;font-size:calc(var(--cw)*.56);line-height:1}
+.card .face{position:absolute;left:0;right:0;bottom:12%;text-align:center;font-size:calc(var(--cw)*.4);font-weight:750;line-height:1}
+.card .face small{display:block;font-size:.62em;margin-top:2px}
+.card.selected{box-shadow:0 0 0 3px var(--select),0 6px 14px rgba(38,62,53,.18)}
+.card.hint{box-shadow:0 0 0 4px var(--target),0 6px 14px rgba(38,62,53,.18)}
+.card.target{box-shadow:0 0 0 3px var(--target)}
+.card.dragging{transition:none;box-shadow:0 12px 26px rgba(38,62,53,.28)}
+.card.shake{animation:shake .32s}
+@keyframes shake{25%{translate:-5px 0}75%{translate:5px 0}}
+
+/* Dialogs */
+.dialog{border:0;border-radius:20px;padding:0;width:min(560px,calc(100vw - 32px));background:#fffdf7;color:var(--ink);box-shadow:0 20px 60px rgba(38,62,53,.22)}
+.dialog::backdrop{background:rgba(38,62,53,.25)}
+.dialog form{padding:24px 26px}
+.dialog h2{margin:0 0 12px;font-size:24px}
+.dialog h3{margin:20px 0 8px;font-size:18px}
+.rules{margin:0;padding-left:1.2em;color:#3d4f46}
+.rules li{margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0}
+.stats div{background:#f1f2e8;border-radius:12px;padding:8px;text-align:center}
+.stats dt{font-size:13px;color:var(--muted)}
+.stats dd{margin:0;font-size:20px;font-weight:700}
+.pick-deal{display:flex;gap:8px}
+.pick-deal input{flex:1;min-width:0;border:1px solid #ccd2c3;border-radius:10px;padding:8px 12px;min-height:46px;background:#fff}
+.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;flex-wrap:wrap}
+.dialog.small{width:min(420px,calc(100vw - 32px))}
+.dialog.small p{margin:0;font-size:18px}
+.win{text-align:center}
+.win .dialog-actions{justify-content:center}
+.win-mark{font-size:46px;color:var(--orange);line-height:1}
+.win p{font-size:18px;color:#3d4f46}
+
+@media (max-width:640px){
+  :root{font-size:16px}
+  .top{flex-wrap:wrap;padding-top:10px}
+  .title img{width:34px;height:34px}
+  .title h1{font-size:21px}
+  .status{order:3;width:100%;justify-content:flex-start;gap:26px}
+  .status span{flex-direction:row;gap:6px;align-items:baseline}
+  .status b{font-size:19px}
+  .toolbar{gap:6px}
+  .toolbar button{padding:6px 10px;font-size:15px;min-height:42px;flex:1 1 auto}
+  main{padding:0 8px 20px}
+  .board{border-radius:14px}
+  .slot-label{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card.shake{animation:none}}

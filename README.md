@@ -17,3 +17,5 @@ Fruit Garden (`fruit-garden`) adds bilingual random match-3 challenges: three di
 Coastal Treasures (`coastal-treasures`) is the tenth game: two randomized daily beaches, independent non-repeat memory runs, 64 designs per beach and locally saved daily progress.
 
 The `coastal-treasures` URL now hosts Little Treasures / 拾光小天地: Spring Garden replaces Twilight Shore, with 64 garden-only flower, plant and toy designs, fully separate from Sunlit Cove. Existing links and language keys remain valid.
+
+FreeCell / 空当接龙 (`freecell`) is the eleventh game and the first one hosted inside this repository, at `/mind-garden/freecell/`. It uses the classic numbered deals (1–1,000,000), unlimited undo, hints, automatic safe moves home, tap or drag controls, and saves the game in progress and personal stats in this browser. Its language key is `freecell-language`.
