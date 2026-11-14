@@ -1,24 +1,30 @@
 // Garden Rails: level settings, track-layout generator and adaptive difficulty. Pure functions, no DOM.
 export const MAX_LEVEL = 12;
-export const ROUND_SECONDS = 90;
+export const ROUND_SECONDS = 60;
 const COLOR_COUNTS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8];
 
 export const clampLevel = (l) => Math.max(1, Math.min(MAX_LEVEL, Math.round(l) || 1));
 
+// Per level: board size, how long the trunk and each branch are, and the shortest allowed route to a house.
+// Higher levels use bigger boards with much longer routes, so several trains are on the track at once.
+const TRACKS = [
+  // [w, h, trunkMin, trunkMax, branchMin, branchMax, minDepth]
+  [9, 7, 4, 6, 2, 4, 4],   [9, 7, 4, 6, 2, 4, 4],   [10, 7, 4, 6, 2, 5, 5],  [10, 8, 5, 7, 2, 5, 5],
+  [11, 8, 5, 7, 3, 5, 6],  [12, 8, 5, 8, 3, 5, 6],  [12, 9, 6, 8, 3, 6, 7],  [13, 9, 6, 9, 3, 6, 8],
+  [14, 9, 6, 9, 3, 6, 9],  [14, 10, 7, 10, 3, 6, 9], [15, 10, 7, 10, 3, 7, 10], [16, 10, 8, 11, 3, 7, 10],
+];
+
 export function levelConfig(level) {
   const L = clampLevel(level);
+  const [w, h, trunkMin, trunkMax, branchMin, branchMax, minDepth] = TRACKS[L - 1];
   return {
     level: L,
     colors: COLOR_COUNTS[L - 1],
-    interval: +(3.4 - (L - 1) * 0.17).toFixed(2), // seconds between trains
-    speed: +(1.5 + (L - 1) * 0.08).toFixed(2),     // grid cells per second
-    points: L * 10,                                // points per correct train
+    interval: +(3.2 - (L - 1) * 0.164).toFixed(2), // seconds between trains
+    speed: +(1.6 + (L - 1) * 0.036).toFixed(2),     // grid cells per second
+    points: L * 10,                                 // points per correct train
+    w, h, trunk: [trunkMin, trunkMax], branch: [branchMin, branchMax], minDepth,
   };
-}
-
-export function gridSize(colors, portrait) {
-  const [w, h] = colors <= 3 ? [9, 7] : colors <= 4 ? [10, 7] : colors <= 5 ? [11, 8] : colors <= 6 ? [12, 8] : colors <= 7 ? [13, 9] : [14, 9];
-  return portrait ? { w: h, h: w } : { w, h };
 }
 
 // Small seeded random generator so layouts can be reproduced in tests.
@@ -36,15 +42,18 @@ export function seeded(seed) {
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
 // Build a branching track: one tunnel, (stations - 1) two-way switches, one house per colour.
-export function generate(stations, w, h, rand = Math.random) {
+export function generate(cfg, portrait = false, rand = Math.random) {
+  const [w, h] = portrait ? [cfg.h, cfg.w] : [cfg.w, cfg.h];
   for (let attempt = 0; attempt < 5000; attempt++) {
-    const layout = tryGenerate(stations, w, h, rand);
+    const layout = tryGenerate(cfg, w, h, rand);
     if (layout) return layout;
   }
   throw new Error('Could not build a track layout');
 }
 
-function tryGenerate(K, w, h, rand) {
+function tryGenerate(cfg, w, h, rand) {
+  const K = cfg.colors;
+  const span = ([lo, hi]) => lo + int(hi - lo + 1);
   const int = (n) => Math.floor(rand() * n);
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = int(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const nodes = new Map();
@@ -104,7 +113,7 @@ function tryGenerate(K, w, h, rand) {
   else if (side === 2) { tx = 1 + int(w - 2); ty = 0; dir = [0, 1]; }
   else { tx = 1 + int(w - 2); ty = h - 1; dir = [0, -1]; }
   const tunnel = add(tx, ty, 'tunnel', null);
-  const trunk = walk(tunnel, 4 + int(4), dir);
+  const trunk = walk(tunnel, span(cfg.trunk), dir);
   if (!trunk) return null;
   build(tunnel, trunk);
 
@@ -120,7 +129,7 @@ function tryGenerate(K, w, h, rand) {
       const c = candidates[int(candidates.length)];
       const d = DIRS[int(4)];
       if (nodes.has(key(c.x + d[0], c.y + d[1]))) continue;
-      const cells = walk(c, 2 + int(3), d);
+      const cells = walk(c, span(cfg.branch), d);
       if (!cells) continue;
       const [ex, ey] = cells[cells.length - 1];
       const spread = Math.min(...stationsList.map((st) => Math.abs(st.x - ex) + Math.abs(st.y - ey)));
@@ -132,7 +141,7 @@ function tryGenerate(K, w, h, rand) {
     build(best.c, best.cells);
   }
   if (stationsList.length < K) return null;
-  if (stationsList.some((s) => s.depth < 4)) return null;
+  if (stationsList.some((s) => s.depth < cfg.minDepth)) return null;
 
   const colors = shuffle([...Array(K).keys()]);
   stationsList.forEach((s, i) => { s.color = colors[i]; });

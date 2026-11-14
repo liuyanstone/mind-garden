@@ -27,6 +27,7 @@ button,select{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-col
 .toolbar button,.dialog button{border:1px solid #ccd2c3;background:#fffdf7;border-radius:10px;padding:8px 16px;min-height:46px;font-size:17px;font-weight:650}
 .toolbar button:hover,.dialog button:hover{border-color:var(--green)}
 .toolbar button:disabled{opacity:.45;cursor:default;border-color:#ccd2c3}
+#btn-sound.off{color:var(--muted)}
 button.primary{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 0 #203d2c}
 button.primary:hover{background:#254b34}
 

@@ -37,6 +37,8 @@ canvas{display:block;touch-action:manipulation;user-select:none;-webkit-user-sel
 .eyebrow{font-size:13px;letter-spacing:.12em;font-weight:750;color:var(--orange);margin:0 0 8px}
 .rules{text-align:left;margin:0 0 12px;padding-left:1.2em;color:#3d4f46}
 .rules li{margin-bottom:6px}
+.choose{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 10px;margin:14px 0 0;font-weight:650}
+.choose select{background:#fffdf7;font-size:17px;min-width:0;max-width:100%}
 .plan{background:#eef2e4;border-radius:12px;padding:10px 14px;margin:12px 0 16px;font-size:17px}
 .plan b{color:var(--green)}
 button.primary{background:var(--green);border:0;color:#fff;border-radius:12px;font-weight:700;box-shadow:0 4px 0 #203d2c}

@@ -1,4 +1,5 @@
 import * as E from './engine.mjs?v=1';
+import * as Sound from './sound.mjs?v=1';
 
 const TEXT = {
   zh: {
@@ -16,6 +17,7 @@ const TEXT = {
     winTitle: '完成了！', winText: '第 {n} 局，用时 {time}，共 {moves} 步。', lookAgain: '看看牌桌', cancel: '取消',
     confirmNew: '这一局还没完成，确定开始新的一局吗？', confirmRestart: '确定从头重新开始这一局吗？',
     confirmDeal: '这一局还没完成，确定换成第 {n} 局吗？', ok: '确定',
+    soundOn: '声音：开', soundOff: '声音：关',
     noHint: '暂时找不到好走法，可以试试撤销几步。', stuck: '没有可以移动的牌了。点“撤销”退回几步，再换个思路。',
     tooMany: '现在一次最多能移动 {n} 张牌。空出空当或牌列，就能移动更多。',
     badDeal: '请输入 1 到 1000000 之间的数字。',
@@ -36,6 +38,7 @@ const TEXT = {
     winTitle: 'Solved!', winText: 'Game #{n} in {time}, {moves} {movesWord}.', lookAgain: 'View the table', cancel: 'Cancel',
     confirmNew: 'This game is not finished yet. Start a new one?', confirmRestart: 'Start this game again from the beginning?',
     confirmDeal: 'This game is not finished yet. Switch to game #{n}?', ok: 'OK',
+    soundOn: 'Sound: on', soundOff: 'Sound: off',
     noHint: 'No obvious good move right now. Try undoing a few moves.', stuck: 'No cards can move. Undo a few moves and try another way.',
     tooMany: 'You can move at most {n} cards at once right now. Free up cells or columns to move more.',
     badDeal: 'Please enter a number from 1 to 1000000.',
@@ -48,7 +51,9 @@ const read = (k) => { try { return localStorage.getItem(k); } catch { return nul
 const write = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } };
 const readJSON = (k, fallback) => { try { return JSON.parse(read(k)) ?? fallback; } catch { return fallback; } };
 
-const LANG_KEY = 'freecell-language', SAVE_KEY = 'freecell-save', STATS_KEY = 'freecell-stats';
+const LANG_KEY = 'freecell-language', SAVE_KEY = 'freecell-save', STATS_KEY = 'freecell-stats', SOUND_KEY = 'freecell-sound';
+let soundOn = read(SOUND_KEY) !== 'off';
+Sound.setEnabled(soundOn);
 const FOUND_ORDER = [3, 2, 0, 1]; // ♠ ♥ ♣ ♦ from left to right
 
 let lang = read(LANG_KEY) || (/^zh/i.test(navigator.language) ? 'zh' : 'en');
@@ -68,6 +73,7 @@ function newGame(dealNo) {
   abandon();
   game = { deal: dealNo, state: E.deal(dealNo), history: [], moves: 0, elapsed: 0, counted: false, won: false };
   selection = null; hideMessage(); save(); render(true);
+  Sound.play('deal');
   runAuto();
 }
 function abandon() {
@@ -113,6 +119,7 @@ function doMove(m) {
   game.history.push({ state: E.clone(game.state), moves: game.moves });
   if (!game.counted) { game.counted = true; stats.played++; saveStats(); }
   paused = false;
+  moveSound(m);
   game.state = E.apply(game.state, m);
   game.moves++;
   selection = null; clearHint(); hideMessage();
@@ -123,7 +130,11 @@ function runAuto() {
   const m = E.nextAutoMove(game.state);
   if (!m) { busy = false; afterMove(); return; }
   busy = true;
-  setTimeout(() => { game.state = E.apply(game.state, m); render(); runAuto(); }, 130);
+  setTimeout(() => { moveSound(m); game.state = E.apply(game.state, m); render(); runAuto(); }, 130);
+}
+function moveSound(m) {
+  if (m.to.t === 'found') Sound.play('home', E.rank(E.cardsAt(game.state, m.from).at(-1)));
+  else Sound.play(m.to.t === 'cell' ? 'cell' : 'move');
 }
 function afterMove() {
   save();
@@ -133,13 +144,14 @@ function afterMove() {
     stats.won++; stats.streak++; stats.bestStreak = Math.max(stats.bestStreak, stats.streak);
     stats.bestTime = stats.bestTime === null ? Math.round(game.elapsed) : Math.min(stats.bestTime, Math.round(game.elapsed));
     saveStats(); save(); syncTimer(); render();
-    setTimeout(showWin, 450);
+    setTimeout(() => { Sound.play('win'); showWin(); }, 450);
   } else if (E.isStuck(game.state)) showMessage(t().stuck);
 }
 function undo() {
   if (busy || !game.history.length) return;
   const prev = game.history.pop();
   game.state = prev.state; game.moves = prev.moves; game.won = false;
+  Sound.play('undo');
   selection = null; clearHint(); hideMessage(); save(); render();
 }
 function tryMove(from, n, to) {
@@ -193,10 +205,11 @@ function onTap(target) {
     render(); shake(sel);
     return;
   }
-  if (target.card !== undefined && pickable(info)) { selection = { from: info.loc, n: info.n }; render(); }
+  if (target.card !== undefined && pickable(info)) { selection = { from: info.loc, n: info.n }; Sound.play('pick'); render(); }
   else if (target.card !== undefined && info.loc.t === 'col') shake({ from: info.loc, n: info.n });
 }
 function shake(sel) {
+  Sound.play('bad');
   for (const c of E.cardsAt(game.state, sel.from).slice(-sel.n)) {
     const el = cardEls[c]; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
   }
@@ -380,7 +393,7 @@ function endPress(e, cancelled) {
   if (p.dragging) {
     p.cards.forEach((c) => cardEls[c].classList.remove('dragging'));
     const to = cancelled ? null : dropTarget(e.clientX - p.x + p.origin[0].x + geo.cw / 2, e.clientY - p.y + p.origin[0].y + geo.ch / 2, p.info.loc);
-    if (!to || !tryMove(p.info.loc, p.info.n, to)) render();
+    if (!to || !tryMove(p.info.loc, p.info.n, to)) { if (to) Sound.play('bad'); render(); }
   } else if (!cancelled) onTap(p.target);
 }
 board.addEventListener('pointerup', (e) => endPress(e, false));
@@ -415,6 +428,7 @@ function applyLanguage() {
   document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t()[el.dataset.t]; });
   $('#language').value = lang;
   board.setAttribute('aria-label', t().table);
+  renderSound();
   renderStats();
   render();
 }
@@ -453,6 +467,20 @@ $('#btn-new').addEventListener('click', () => confirmThen(t().confirmNew, t().ne
 $('#btn-restart').addEventListener('click', () => confirmThen(t().confirmRestart, t().restart, () => newGame(game.deal)));
 $('#btn-undo').addEventListener('click', undo);
 $('#btn-hint').addEventListener('click', showHint);
+function renderSound() {
+  const b = $('#btn-sound');
+  b.textContent = `♪ ${soundOn ? t().soundOn : t().soundOff}`;
+  b.setAttribute('aria-pressed', String(soundOn));
+  b.classList.toggle('off', !soundOn);
+}
+$('#btn-sound').addEventListener('click', () => {
+  soundOn = !soundOn; write(SOUND_KEY, soundOn ? 'on' : 'off');
+  Sound.setEnabled(soundOn); renderSound();
+  if (soundOn) setTimeout(() => Sound.play('move'), 30);
+});
+// Audio may only start after the player touches the page.
+document.addEventListener('pointerdown', () => Sound.unlock(), true);
+document.addEventListener('keydown', () => Sound.unlock(), true);
 $('#btn-help').addEventListener('click', () => { renderStats(); $('#deal-input').value = game.deal; $('#help').showModal(); });
 $('#btn-play-deal').addEventListener('click', () => {
   const n = Number($('#deal-input').value);

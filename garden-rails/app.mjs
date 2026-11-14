@@ -1,16 +1,19 @@
-import * as L from './layout.mjs?v=1';
+import * as L from './layout.mjs?v=2';
 
 const TEXT = {
   zh: {
     title: '花园小火车 · Garden Rails', name: '花园小火车', language: '语言',
     timeLeft: '剩余时间', level: '难度', correct: '送对', score: '得分',
-    eyebrow: '90 秒 · 专注与分配注意', startTitle: '把小火车送回家',
+    eyebrow: '60 秒 · 专注与分配注意', startTitle: '把小火车送回家',
     rule1: '彩色小火车会不断从山洞里开出来，每列车都要回到同样颜色、同样图案的小屋。',
     rule2: '点一下轨道上的圆形道岔，就能切换它指向的方向。火车经过道岔时，会沿着箭头走。',
-    rule3: '一局 90 秒。难度越高，颜色越多、火车越密、速度越快。',
+    rule3: '一局 60 秒。难度越高，颜色越多、铁轨越长，同时在跑的火车也越多。可以选“自动”，也可以自己挑难度。',
     planDaily: '今天第一局：随机难度 <b>Lv {level}</b>（{colors} 种颜色）',
     planAdaptive: '根据最近三局的平均表现：<b>Lv {level}</b>（{colors} 种颜色）',
     planNew: '第一次玩：从 <b>Lv {level}</b> 开始（{colors} 种颜色）',
+    planManual: '你选择的难度：<b>Lv {level}</b>（{colors} 种颜色）',
+    chooseLevel: '难度', autoOption: '自动（推荐）', levelOption: 'Lv {level} · {colors} 种颜色',
+    nextManual: '下一局：<b>Lv {level}</b>（{colors} 种颜色）· 你选择的难度',
     start: '开始', pausedTitle: '已暂停', resume: '继续', pause: '暂停',
     soundOn: '声音开', soundOff: '声音关',
     timeUp: '时间到', recentTitle: '最近三局', again: '再玩一局',
@@ -24,13 +27,16 @@ const TEXT = {
   en: {
     title: 'Garden Rails · 花园小火车', name: 'Garden Rails', language: 'Language',
     timeLeft: 'Time left', level: 'Level', correct: 'Correct', score: 'Score',
-    eyebrow: '90 SECONDS · FOCUS & SPLIT ATTENTION', startTitle: 'Bring every train home',
+    eyebrow: '60 SECONDS · FOCUS & SPLIT ATTENTION', startTitle: 'Bring every train home',
     rule1: 'Colourful trains keep rolling out of the tunnel. Each one must reach the house with the same colour and symbol.',
     rule2: 'Tap a round switch on the track to flip its direction. Trains follow the arrow as they pass.',
-    rule3: 'Each round lasts 90 seconds. Higher levels bring more colours, more trains and faster speeds.',
+    rule3: 'Each round lasts 60 seconds. Higher levels bring more colours, longer tracks and more trains running at the same time. Choose Auto, or pick a level yourself.',
     planDaily: 'First round today: random level <b>Lv {level}</b> ({colors} colours)',
     planAdaptive: 'Based on your last three rounds: <b>Lv {level}</b> ({colors} colours)',
     planNew: 'First time here: starting at <b>Lv {level}</b> ({colors} colours)',
+    planManual: 'Your chosen level: <b>Lv {level}</b> ({colors} colours)',
+    chooseLevel: 'Level', autoOption: 'Auto (recommended)', levelOption: 'Lv {level} · {colors} colours',
+    nextManual: 'Next round: <b>Lv {level}</b> ({colors} colours) · your chosen level',
     start: 'Start', pausedTitle: 'Paused', resume: 'Resume', pause: 'Pause',
     soundOn: 'Sound on', soundOff: 'Sound off',
     timeUp: "TIME'S UP", recentTitle: 'Last three rounds', again: 'Play again',
@@ -53,7 +59,7 @@ const fmt = (s, v) => s.replace(/\{(\w+)\}/g, (_, k) => v[k]);
 const pct = (x) => `${Math.round(x * 100)}%`;
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 
-const KEYS = { lang: 'garden-rails-language', sound: 'garden-rails-sound', history: 'garden-rails-history', day: 'garden-rails-day' };
+const KEYS = { lang: 'garden-rails-language', sound: 'garden-rails-sound', history: 'garden-rails-history', day: 'garden-rails-day', choice: 'garden-rails-choice' };
 let lang = read(KEYS.lang) || (/^zh/i.test(navigator.language) ? 'zh' : 'en');
 if (!TEXT[lang]) lang = 'zh';
 const t = () => TEXT[lang];
@@ -70,7 +76,10 @@ function dayRecord() {
   }
   return d;
 }
+let choice = read(KEYS.choice) || 'auto';
+if (choice !== 'auto' && !(Number(choice) >= 1 && Number(choice) <= L.MAX_LEVEL)) choice = 'auto';
 function plan() {
+  if (choice !== 'auto') return { level: Number(choice), why: 'manual' };
   const d = dayRecord();
   if (d.played === 0) return { level: d.randomLevel, why: history.length ? 'daily' : 'new' };
   return { level: L.adaptiveLevel(history), why: 'adaptive' };
@@ -93,8 +102,7 @@ function prepare() {
   currentPlan = plan();
   cfg = L.levelConfig(currentPlan.level);
   portrait = stage.clientWidth < 640 && window.innerHeight > window.innerWidth;
-  const { w, h } = L.gridSize(cfg.colors, portrait);
-  layout = L.generate(cfg.colors, w, h);
+  layout = L.generate(cfg, portrait);
   trains = []; effects = []; recentColors = [];
   elapsed = 0; correct = 0; total = 0; score = 0;
   spawnIn = 0.6;
@@ -114,7 +122,7 @@ function resize() {
   for (const c of [canvas, staticLayer]) { c.width = Math.round(S * layout.w * dpr); c.height = Math.round(S * layout.h * dpr); }
   canvas.style.width = `${S * layout.w}px`;
   canvas.style.height = `${S * layout.h}px`;
-  stage.style.minHeight = `${S * layout.h}px`;
+  fitStage();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawStatic();
@@ -123,6 +131,13 @@ function resize() {
 
 const cx = (n) => (n.x + 0.5) * S;
 const cy = (n) => (n.y + 0.5) * S;
+
+// Make the play area tall enough for whichever panel is showing (start or results), so nothing gets cut off.
+function fitStage() {
+  if (!layout) return;
+  const panel = stage.querySelector('.overlay:not([hidden]) .panel');
+  stage.style.minHeight = `${Math.max(S * layout.h, panel ? panel.scrollHeight + 32 : 0)}px`;
+}
 
 function drawStatic() {
   const c = sctx;
@@ -349,6 +364,7 @@ function startRound() {
   $('#start').hidden = true; $('#result').hidden = true;
   phase = 'countdown'; countdown = 3;
   $('#count-num').textContent = '3';
+  fitStage();
   $('#countdown').hidden = false;
 }
 function pause() {
@@ -385,17 +401,37 @@ function showResult(entry, d) {
     [t().accuracy, pct(acc)], [t().todayBest, d.best],
   ];
   $('#result-grid').innerHTML = cells.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
-  const next = L.adaptiveLevel(history);
-  const why = next > entry.level ? t().whyUp : next < entry.level ? t().whyDown : t().whySame;
-  $('#result-next').innerHTML = fmt(t().nextUp, { level: next, colors: L.levelConfig(next).colors, why });
+  renderNext(entry);
   $('#recent').innerHTML = history.slice(-3).reverse().map((g) =>
     `<li><span>${fmt(t().recentRow, { level: g.level, correct: g.correct, total: g.total, acc: pct(g.accuracy) })}</span><b>${g.score}</b></li>`).join('');
   $('#result').hidden = false;
+  fitStage();
 }
+
+function renderNext(entry) {
+  const next = plan().level;
+  if (choice !== 'auto') { $('#result-next').innerHTML = fmt(t().nextManual, { level: next, colors: L.levelConfig(next).colors }); return; }
+  const why = next > entry.level ? t().whyUp : next < entry.level ? t().whyDown : t().whySame;
+  $('#result-next').innerHTML = fmt(t().nextUp, { level: next, colors: L.levelConfig(next).colors, why });
+}
+
+// Level picker (on the start and result panels): "Auto" or a fixed level.
+function renderLevelSelects() {
+  const opts = [`<option value="auto">${t().autoOption}</option>`,
+    ...Array.from({ length: L.MAX_LEVEL }, (_, i) => `<option value="${i + 1}">${fmt(t().levelOption, { level: i + 1, colors: L.levelConfig(i + 1).colors })}</option>`)].join('');
+  document.querySelectorAll('.level-select').forEach((sel) => { sel.innerHTML = opts; sel.value = choice; });
+}
+document.querySelectorAll('.level-select').forEach((sel) => sel.addEventListener('change', () => {
+  choice = sel.value;
+  write(KEYS.choice, choice);
+  document.querySelectorAll('.level-select').forEach((other) => { other.value = choice; });
+  if (phase === 'ready') prepare();
+  else if (phase === 'over' && history.length) renderNext(history.at(-1));
+}));
 
 function renderPlan() {
   if (!currentPlan) return;
-  const key = currentPlan.why === 'daily' ? 'planDaily' : currentPlan.why === 'new' ? 'planNew' : 'planAdaptive';
+  const key = { daily: 'planDaily', new: 'planNew', manual: 'planManual' }[currentPlan.why] || 'planAdaptive';
   $('#plan').innerHTML = fmt(t()[key], { level: cfg.level, colors: cfg.colors });
 }
 function updateHud() {
@@ -447,7 +483,9 @@ function applyLanguage() {
   $('#btn-pause').textContent = t().pause;
   canvas.setAttribute('aria-label', t().railway);
   renderSound();
+  renderLevelSelects();
   renderPlan();
+  fitStage();
   if (phase === 'over' && history.length) showResult(history.at(-1), dayRecord());
 }
 $('#language').addEventListener('change', (e) => { if (TEXT[e.target.value]) { lang = e.target.value; write(KEYS.lang, lang); applyLanguage(); } });
@@ -477,6 +515,7 @@ function frame(now) {
 
 prepare();
 applyLanguage();
+window.addEventListener('load', fitStage);
 requestAnimationFrame(frame);
 
 // Small hook for automated checks.

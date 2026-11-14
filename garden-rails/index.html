@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f4e9">
-<meta name="description" content="花园小火车 Garden Rails：90 秒内扳动道岔，把每列彩色小火车送回同色的小屋。难度随最近三局表现自动调整。">
+<meta name="description" content="花园小火车 Garden Rails：60 秒内扳动道岔，把每列彩色小火车送回同色的小屋。难度随最近三局表现自动调整。">
 <title>花园小火车 · Garden Rails</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=1">
-<script type="module" src="app.mjs?v=1"></script>
+<link rel="stylesheet" href="style.css?v=2">
+<script type="module" src="app.mjs?v=2"></script>
 </head>
 <body>
 <header class="top">
@@ -39,13 +39,14 @@
 
     <div class="overlay" id="start">
       <div class="panel">
-        <p class="eyebrow" data-t="eyebrow">90 秒 · 专注与分配注意</p>
+        <p class="eyebrow" data-t="eyebrow">60 秒 · 专注与分配注意</p>
         <h2 data-t="startTitle">把小火车送回家</h2>
         <ul class="rules">
           <li data-t="rule1"></li>
           <li data-t="rule2"></li>
           <li data-t="rule3"></li>
         </ul>
+        <label class="choose"><span data-t="chooseLevel">难度</span><select class="level-select pill"></select></label>
         <p class="plan" id="plan"></p>
         <button type="button" class="primary big" id="btn-start" data-t="start">开始</button>
       </div>
@@ -66,6 +67,7 @@
         <h2 id="result-title"></h2>
         <div class="result-grid" id="result-grid"></div>
         <p class="plan" id="result-next"></p>
+        <label class="choose"><span data-t="chooseLevel">难度</span><select class="level-select pill"></select></label>
         <h3 data-t="recentTitle">最近三局</h3>
         <ol class="recent" id="recent"></ol>
         <button type="button" class="primary big" id="btn-again" data-t="again">再玩一局</button>
