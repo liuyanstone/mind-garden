@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f4e9">
+<meta name="description" content="花园小火车 Garden Rails：90 秒内扳动道岔，把每列彩色小火车送回同色的小屋。难度随最近三局表现自动调整。">
+<title>花园小火车 · Garden Rails</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=1">
+<script type="module" src="app.mjs?v=1"></script>
+</head>
+<body>
+<header class="top">
+  <div class="title">
+    <img src="icon.svg" width="40" height="40" alt="">
+    <h1 data-t="name">花园小火车</h1>
+  </div>
+  <div class="top-actions">
+    <button type="button" id="btn-sound" class="pill" aria-pressed="true"></button>
+    <button type="button" id="btn-pause" class="pill" hidden></button>
+    <label><span class="sr" data-t="language">语言</span>
+      <select id="language" class="pill" aria-label="语言 / Language"><option value="zh">中文</option><option value="en">English</option></select>
+    </label>
+  </div>
+</header>
+
+<main>
+  <div class="hud" aria-live="off">
+    <div class="hud-item"><small data-t="timeLeft">剩余时间</small><b id="hud-time">1:30</b></div>
+    <div class="hud-item"><small data-t="level">难度</small><b id="hud-level">Lv 1</b></div>
+    <div class="hud-item"><small data-t="correct">送对</small><b id="hud-correct">0 / 0</b></div>
+    <div class="hud-item"><small data-t="score">得分</small><b id="hud-score">0</b></div>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+  <div class="stage" id="stage">
+    <canvas id="canvas" aria-label="铁路 / Railway"></canvas>
+
+    <div class="overlay" id="start">
+      <div class="panel">
+        <p class="eyebrow" data-t="eyebrow">90 秒 · 专注与分配注意</p>
+        <h2 data-t="startTitle">把小火车送回家</h2>
+        <ul class="rules">
+          <li data-t="rule1"></li>
+          <li data-t="rule2"></li>
+          <li data-t="rule3"></li>
+        </ul>
+        <p class="plan" id="plan"></p>
+        <button type="button" class="primary big" id="btn-start" data-t="start">开始</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="countdown" hidden><div class="count" id="count-num">3</div></div>
+
+    <div class="overlay" id="paused" hidden>
+      <div class="panel small">
+        <h2 data-t="pausedTitle">已暂停</h2>
+        <button type="button" class="primary big" id="btn-resume" data-t="resume">继续</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="result" hidden>
+      <div class="panel">
+        <p class="eyebrow" data-t="timeUp">时间到</p>
+        <h2 id="result-title"></h2>
+        <div class="result-grid" id="result-grid"></div>
+        <p class="plan" id="result-next"></p>
+        <h3 data-t="recentTitle">最近三局</h3>
+        <ol class="recent" id="recent"></ol>
+        <button type="button" class="primary big" id="btn-again" data-t="again">再玩一局</button>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>
