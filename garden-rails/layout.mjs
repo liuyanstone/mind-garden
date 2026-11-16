@@ -1,6 +1,6 @@
 // Garden Rails: level settings, track-layout generator and adaptive difficulty. Pure functions, no DOM.
 export const MAX_LEVEL = 12;
-export const ROUND_SECONDS = 60;
+export const TRAINS_PER_ROUND = 25;
 const COLOR_COUNTS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8];
 
 export const clampLevel = (l) => Math.max(1, Math.min(MAX_LEVEL, Math.round(l) || 1));

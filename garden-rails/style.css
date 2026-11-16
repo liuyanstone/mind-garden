@@ -45,7 +45,7 @@ button.primary{background:var(--green);border:0;color:#fff;border-radius:12px;fo
 button.primary:hover{background:#254b34}
 button.big{font-size:20px;padding:12px 40px;min-height:54px}
 .count{font-size:120px;font-weight:800;color:var(--green);text-shadow:0 4px 0 #fffdf7}
-.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.result-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 0}
 .result-grid div{background:#f1f2e8;border-radius:12px;padding:8px 4px}
 .result-grid small{display:block;font-size:13px;color:var(--muted)}
 .result-grid b{font-size:22px}
@@ -68,6 +68,6 @@ button.big{font-size:20px;padding:12px 40px;min-height:54px}
   .stage{border-radius:14px}
   .panel{padding:18px 16px}
   .panel h2{font-size:23px}
-  .result-grid{grid-template-columns:repeat(2,1fr)}
+  .result-grid{grid-template-columns:repeat(3,1fr)}
   .count{font-size:90px}
 }

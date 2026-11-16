@@ -1,13 +1,13 @@
-import * as L from './layout.mjs?v=2';
+import * as L from './layout.mjs?v=3';
 
 const TEXT = {
   zh: {
     title: '花园小火车 · Garden Rails', name: '花园小火车', language: '语言',
-    timeLeft: '剩余时间', level: '难度', correct: '送对', score: '得分',
-    eyebrow: '60 秒 · 专注与分配注意', startTitle: '把小火车送回家',
+    trainsLeft: '剩余火车', level: '难度', correct: '送对', score: '得分',
+    eyebrow: '每局 25 列火车 · 专注与分配注意', startTitle: '把小火车送回家',
     rule1: '彩色小火车会不断从山洞里开出来，每列车都要回到同样颜色、同样图案的小屋。',
     rule2: '点一下轨道上的圆形道岔，就能切换它指向的方向。火车经过道岔时，会沿着箭头走。',
-    rule3: '一局 60 秒。难度越高，颜色越多、铁轨越长，同时在跑的火车也越多。可以选“自动”，也可以自己挑难度。',
+    rule3: '每局共 25 列火车，全部到站就结束。难度越高，颜色越多、铁轨越长，同时在跑的火车也越多。可以选“自动”，也可以自己挑难度。',
     planDaily: '今天第一局：随机难度 <b>Lv {level}</b>（{colors} 种颜色）',
     planAdaptive: '根据最近三局的平均表现：<b>Lv {level}</b>（{colors} 种颜色）',
     planNew: '第一次玩：从 <b>Lv {level}</b> 开始（{colors} 种颜色）',
@@ -16,7 +16,7 @@ const TEXT = {
     nextManual: '下一局：<b>Lv {level}</b>（{colors} 种颜色）· 你选择的难度',
     start: '开始', pausedTitle: '已暂停', resume: '继续', pause: '暂停',
     soundOn: '声音开', soundOff: '声音关',
-    timeUp: '时间到', recentTitle: '最近三局', again: '再玩一局',
+    timeUp: '本局完成', timeUsed: '用时', recentTitle: '最近三局', again: '再玩一局',
     great: '太棒了！', good: '很不错！', fine: '稳稳当当', keep: '慢慢来，下次会更好',
     accuracy: '正确率', todayBest: '今日最高', trains: '送对 / 到站',
     nextUp: '下一局：<b>Lv {level}</b>（{colors} 种颜色）· {why}',
@@ -26,11 +26,11 @@ const TEXT = {
   },
   en: {
     title: 'Garden Rails · 花园小火车', name: 'Garden Rails', language: 'Language',
-    timeLeft: 'Time left', level: 'Level', correct: 'Correct', score: 'Score',
-    eyebrow: '60 SECONDS · FOCUS & SPLIT ATTENTION', startTitle: 'Bring every train home',
+    trainsLeft: 'Trains left', level: 'Level', correct: 'Correct', score: 'Score',
+    eyebrow: '25 TRAINS A ROUND · FOCUS & SPLIT ATTENTION', startTitle: 'Bring every train home',
     rule1: 'Colourful trains keep rolling out of the tunnel. Each one must reach the house with the same colour and symbol.',
     rule2: 'Tap a round switch on the track to flip its direction. Trains follow the arrow as they pass.',
-    rule3: 'Each round lasts 60 seconds. Higher levels bring more colours, longer tracks and more trains running at the same time. Choose Auto, or pick a level yourself.',
+    rule3: 'Each round has 25 trains and ends when they have all arrived. Higher levels bring more colours, longer tracks and more trains running at the same time. Choose Auto, or pick a level yourself.',
     planDaily: 'First round today: random level <b>Lv {level}</b> ({colors} colours)',
     planAdaptive: 'Based on your last three rounds: <b>Lv {level}</b> ({colors} colours)',
     planNew: 'First time here: starting at <b>Lv {level}</b> ({colors} colours)',
@@ -39,7 +39,7 @@ const TEXT = {
     nextManual: 'Next round: <b>Lv {level}</b> ({colors} colours) · your chosen level',
     start: 'Start', pausedTitle: 'Paused', resume: 'Resume', pause: 'Pause',
     soundOn: 'Sound on', soundOff: 'Sound off',
-    timeUp: "TIME'S UP", recentTitle: 'Last three rounds', again: 'Play again',
+    timeUp: 'ROUND COMPLETE', timeUsed: 'Time', recentTitle: 'Last three rounds', again: 'Play again',
     great: 'Wonderful!', good: 'Nicely done!', fine: 'Steady work', keep: 'Take it easy — next time will be better',
     accuracy: 'Accuracy', todayBest: "Today's best", trains: 'Correct / arrived',
     nextUp: 'Next round: <b>Lv {level}</b> ({colors} colours) · {why}',
@@ -88,7 +88,7 @@ function plan() {
 // ---------- Game state ----------
 let cfg, layout, S = 40, portrait = false;
 let phase = 'ready'; // ready | countdown | playing | paused | over
-let elapsed = 0, countdown = 0, spawnIn = 0, correct = 0, total = 0, score = 0;
+let elapsed = 0, countdown = 0, spawnIn = 0, correct = 0, total = 0, score = 0, spawned = 0, endIn = null;
 let trains = [], effects = [], recentColors = [];
 let currentPlan = null;
 
@@ -105,7 +105,7 @@ function prepare() {
   layout = L.generate(cfg, portrait);
   trains = []; effects = []; recentColors = [];
   elapsed = 0; correct = 0; total = 0; score = 0;
-  spawnIn = 0.6;
+  spawnIn = 0.6; spawned = 0; endIn = null;
   resize();
   renderPlan();
   updateHud();
@@ -311,7 +311,8 @@ function update(dt) {
   elapsed += dt;
   spawnIn -= dt;
   const exitClear = !trains.some((tr) => tr.dist < 1.15);
-  if (spawnIn <= 0 && exitClear && elapsed < L.ROUND_SECONDS - 1) {
+  if (spawnIn <= 0 && exitClear && spawned < L.TRAINS_PER_ROUND) {
+    spawned++;
     const first = layout.tunnel.children[0];
     trains.push({ color: pickColor(), from: layout.tunnel, to: first, t: 0, dist: 0, prevAngle: Math.atan2(first.y - layout.tunnel.y, first.x - layout.tunnel.x) });
     spawnIn = cfg.interval * (0.85 + Math.random() * 0.3);
@@ -328,7 +329,9 @@ function update(dt) {
     }
   }
   trains = trains.filter((tr) => !tr.done);
-  if (elapsed >= L.ROUND_SECONDS) finish();
+  // The round ends shortly after the last of the 25 trains reaches a house.
+  if (endIn === null && total >= L.TRAINS_PER_ROUND) endIn = 0.8;
+  if (endIn !== null && (endIn -= dt) <= 0) finish();
   updateHud();
 }
 function arrive(tr, house) {
@@ -382,7 +385,7 @@ function finish() {
   phase = 'over';
   $('#btn-pause').hidden = true;
   const acc = total ? correct / total : 0;
-  const entry = { date: today(), level: cfg.level, correct, total, score, accuracy: +acc.toFixed(3), rating: L.rating(cfg.level, acc) };
+  const entry = { date: today(), level: cfg.level, correct, total, score, seconds: Math.round(elapsed), accuracy: +acc.toFixed(3), rating: L.rating(cfg.level, acc) };
   history.push(entry);
   history = history.slice(-30);
   write(KEYS.history, JSON.stringify(history));
@@ -398,7 +401,7 @@ function showResult(entry, d) {
   $('#result-title').textContent = acc >= 0.92 ? t().great : acc >= 0.8 ? t().good : acc >= 0.65 ? t().fine : t().keep;
   const cells = [
     [t().score, entry.score], [t().trains, `${entry.correct} / ${entry.total}`],
-    [t().accuracy, pct(acc)], [t().todayBest, d.best],
+    [t().accuracy, pct(acc)], [t().timeUsed, clock(entry.seconds ?? 0)], [t().todayBest, d.best],
   ];
   $('#result-grid').innerHTML = cells.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('');
   renderNext(entry);
@@ -408,6 +411,7 @@ function showResult(entry, d) {
   fitStage();
 }
 
+const clock = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 function renderNext(entry) {
   const next = plan().level;
   if (choice !== 'auto') { $('#result-next').innerHTML = fmt(t().nextManual, { level: next, colors: L.levelConfig(next).colors }); return; }
@@ -435,13 +439,12 @@ function renderPlan() {
   $('#plan').innerHTML = fmt(t()[key], { level: cfg.level, colors: cfg.colors });
 }
 function updateHud() {
-  const left = Math.max(0, L.ROUND_SECONDS - elapsed);
-  const sec = Math.ceil(left);
-  $('#hud-time').textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  const left = Math.max(0, L.TRAINS_PER_ROUND - total);
+  $('#hud-left').textContent = left;
   $('#hud-level').textContent = `Lv ${cfg.level}`;
   $('#hud-correct').textContent = `${correct} / ${total}`;
   $('#hud-score').textContent = score;
-  $('#progress').style.transform = `scaleX(${left / L.ROUND_SECONDS})`;
+  $('#progress').style.transform = `scaleX(${left / L.TRAINS_PER_ROUND})`;
 }
 
 // ---------- Sound ----------
