@@ -1,7 +1,7 @@
 // Garden Rails: level settings, track-layout generator and adaptive difficulty. Pure functions, no DOM.
-export const MAX_LEVEL = 12;
+export const MAX_LEVEL = 10;
 export const TRAINS_PER_ROUND = 25;
-const COLOR_COUNTS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8];
+const COLOR_COUNTS = [4, 4, 5, 5, 6, 6, 7, 7, 8, 8];
 
 export const clampLevel = (l) => Math.max(1, Math.min(MAX_LEVEL, Math.round(l) || 1));
 
@@ -9,9 +9,9 @@ export const clampLevel = (l) => Math.max(1, Math.min(MAX_LEVEL, Math.round(l) |
 // Higher levels use bigger boards with much longer routes, so several trains are on the track at once.
 const TRACKS = [
   // [w, h, trunkMin, trunkMax, branchMin, branchMax, minDepth]
-  [9, 7, 4, 6, 2, 4, 4],   [9, 7, 4, 6, 2, 4, 4],   [10, 7, 4, 6, 2, 5, 5],  [10, 8, 5, 7, 2, 5, 5],
-  [11, 8, 5, 7, 3, 5, 6],  [12, 8, 5, 8, 3, 5, 6],  [12, 9, 6, 8, 3, 6, 7],  [13, 9, 6, 9, 3, 6, 8],
-  [14, 9, 6, 9, 3, 6, 9],  [14, 10, 7, 10, 3, 6, 9], [15, 10, 7, 10, 3, 7, 10], [16, 10, 8, 11, 3, 7, 10],
+  [10, 8, 5, 7, 2, 5, 5],  [11, 8, 5, 7, 3, 5, 6],  [12, 8, 5, 8, 3, 5, 6],   [12, 9, 6, 8, 3, 6, 7],
+  [13, 9, 6, 9, 3, 6, 8],  [14, 9, 6, 9, 3, 6, 9],  [14, 10, 7, 10, 3, 6, 9], [15, 10, 7, 10, 3, 7, 10],
+  [16, 10, 8, 11, 3, 7, 10], [17, 11, 8, 12, 3, 7, 11],
 ];
 
 export function levelConfig(level) {
@@ -20,8 +20,8 @@ export function levelConfig(level) {
   return {
     level: L,
     colors: COLOR_COUNTS[L - 1],
-    interval: +(3.2 - (L - 1) * 0.164).toFixed(2), // seconds between trains
-    speed: +(1.6 + (L - 1) * 0.036).toFixed(2),     // grid cells per second
+    interval: +(3.2 - (L + 2) * 0.164).toFixed(2), // seconds between trains (Lv 1 here was Lv 4 in the first version)
+    speed: +(1.6 + (L + 2) * 0.036).toFixed(2),     // grid cells per second
     points: L * 10,                                 // points per correct train
     w, h, trunk: [trunkMin, trunkMax], branch: [branchMin, branchMax], minDepth,
   };
@@ -166,7 +166,7 @@ export function rating(level, accuracy) {
 }
 export function adaptiveLevel(history) {
   const recent = history.slice(-3);
-  if (!recent.length) return 2;
+  if (!recent.length) return 1;
   return clampLevel(recent.reduce((sum, g) => sum + g.rating, 0) / recent.length);
 }
 // First round of the day: a random level near the player's usual level (any of 1–4 for a newcomer).

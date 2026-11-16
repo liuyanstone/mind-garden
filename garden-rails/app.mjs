@@ -1,4 +1,4 @@
-import * as L from './layout.mjs?v=3';
+import * as L from './layout.mjs?v=4';
 
 const TEXT = {
   zh: {
@@ -68,6 +68,16 @@ let soundOn = read(KEYS.sound) !== 'off';
 // ---------- Level plan ----------
 let history = readJSON(KEYS.history, []);
 if (!Array.isArray(history)) history = [];
+// Levels were renumbered (old Lv 1–3 removed, old Lv 4 is now Lv 1). Shift saved levels once to match.
+if (read('garden-rails-scale') !== '2') {
+  const shift = (n) => Math.max(1, Math.min(L.MAX_LEVEL, Number(n) - 3));
+  history = history.map((g) => ({ ...g, level: shift(g.level), rating: shift(g.rating) }));
+  write(KEYS.history, JSON.stringify(history));
+  const oldChoice = read(KEYS.choice);
+  if (oldChoice && oldChoice !== 'auto') write(KEYS.choice, String(shift(oldChoice)));
+  try { localStorage.removeItem(KEYS.day); } catch { /* storage unavailable */ }
+  write('garden-rails-scale', '2');
+}
 function dayRecord() {
   let d = readJSON(KEYS.day, null);
   if (!d || d.date !== today()) {
